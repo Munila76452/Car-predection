@@ -57,37 +57,8 @@ def home():
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Car Price Predictor</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-        <style>
-            body {
-                background-color: #f8f9fa;
-                min-height: 100vh;
-                display: flex;
-                flex-direction: column;
-            }
-            .main-container {
-                max-width: 800px;
-                margin: 2rem auto;
-                padding: 2rem;
-                background-color: white;
-                border-radius: 10px;
-                box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            }
-            .form-label {
-                font-weight: 500;
-            }
-            .result-container {
-                display: none;
-                margin-top: 2rem;
-                padding: 1rem;
-                border-radius: 5px;
-                background-color: #e9ecef;
-            }
-            .loading {
-                display: none;
-                text-align: center;
-                margin: 1rem 0;
-            }
-        </style>
+        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+        <link href="/static/css/styles.css" rel="stylesheet">
     </head>
     <body>
         <div class="container main-container">
@@ -171,6 +142,7 @@ def home():
                     if (data.success) {
                         predictedPrice.textContent = `₹${data.predicted_price.toLocaleString()}`;
                         resultContainer.style.display = 'block';
+                        resultContainer.classList.add('show');
                     } else {
                         alert('Error: ' + data.error);
                     }
@@ -229,6 +201,23 @@ class handler(BaseHTTPRequestHandler):
             self.send_header('Content-type', 'text/html')
             self.end_headers()
             self.wfile.write(home().encode())
+        elif path.startswith('/static/'):
+            # Serve static files
+            try:
+                file_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), path.lstrip('/'))
+                with open(file_path, 'rb') as f:
+                    content = f.read()
+                
+                content_type = 'text/css' if file_path.endswith('.css') else 'application/octet-stream'
+                
+                self.send_response(200)
+                self.send_header('Content-type', content_type)
+                self.end_headers()
+                self.wfile.write(content)
+            except Exception as e:
+                self.send_response(404)
+                self.end_headers()
+                self.wfile.write(f'File not found: {str(e)}'.encode())
         else:
             self.send_response(404)
             self.end_headers()
